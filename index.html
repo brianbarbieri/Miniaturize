@@ -3,14 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image Viewer</title>
+  <title>Miniaturize</title>
+  <link rel="stylesheet" type="text/css" href="./main.css">
 </head>
 <body>
-  <h1>Image Viewer</h1>
-  <button id="upload-btn">Upload Image</button>
-  <div id="image-container">
-    <img id="displayed-image" style="max-width: 100%; max-height: 500px; display: none;" />
-  </div>
+<div id="sidebar">
+    <h1>Miniaturize</h1>
+    <button id="upload-btn">Upload Image</button>
+    <div class="slider-container">
+        <label for="saturation-slider">Adjust Saturation</label>
+        <input type="range" id="saturation-slider" min="0" max="200" value="100">
+    </div>
+    <button id="blur-btn">Toggle Blur</button>
+    </div>
+    <div id="main-content">
+    <div id="image-container">
+        <img id="displayed-image" style="display: none;" />
+    </div>
+    </div>
 
   <script src="renderer.js"></script>
 </body>
