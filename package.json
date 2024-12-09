@@ -1,0 +1,22 @@
+{
+  "name": "miniaturize",
+  "version": "1.0.0",
+  "description": "Electron app to miniaturize images and videos",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brianbarbieri/Miniaturize.git"
+  },
+  "author": "Brian Barbieri",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/brianbarbieri/Miniaturize/issues"
+  },
+  "homepage": "https://github.com/brianbarbieri/Miniaturize#readme",
+  "devDependencies": {
+    "electron": "^33.2.1"
+  }
+}
