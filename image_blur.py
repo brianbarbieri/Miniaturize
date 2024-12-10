@@ -1,80 +1,86 @@
-from PIL import Image, ImageFilter
-import numpy as np
+from PIL import Image, ImageFilter, ImageEnhance, ImageDraw
+import os
 import traceback
 import sys
 import json
 
-def blur_image(input_path, output_path, box):
+def blur_image(input_path, output_path, box, contrast=1):
     try:
-        print(input_path)
         img = Image.open(input_path)
-        box = list(map(int, box))
-        width, height = img.size
+        if not None in box:
+            # print("Blurring image outside of: ", box)
+            # width, height = img.size
 
-        # Step 2: Define the box region (e.g., top-left and bottom-right corners)
-        box_top_left = (100, 500)  # x, y of top-left
-        box_bottom_right = (800, 1000)  # x, y of bottom-right
+            # # Define the sharp box region (left, upper, right, lower)
+            # sharp_box = (int(width*box[0]), int(height*box[1]), int(width*box[2]), int(height*box[3]))
 
-        # Step 3: Create a distance-based blur mask
-        mask = np.zeros((height, width), dtype=np.float32)
+            # # Create a blurred version of the image
+            # blurred_img = img.filter(ImageFilter.GaussianBlur(radius=20))
 
-        box_center_x = (box_top_left[0] + box_bottom_right[0]) // 2
-        box_center_y = (box_top_left[1] + box_bottom_right[1]) // 2
+            # # Crop the sharp region from the original image
+            # sharp_region = img.crop(sharp_box)
 
-        # Compute distance from the center of the box
-        for y in range(height):
-            for x in range(width):
-                distance = np.sqrt((x - box_center_x)**2 + (y - box_center_y)**2)
-                mask[y, x] = distance
+            # # Paste the sharp region back onto the blurred image
+            # blurred_img.paste(sharp_region, sharp_box)
+            # img = blurred_img
 
-                # Normalize the mask to a range suitable for blur radii
-                max_blur_radius = 5  # Adjust this value for stronger/weaker blur
-                mask = (mask / mask.max()) * max_blur_radius
+            # Print the specified sharp region
+            print("Blurring image outside of: ", box)
+            width, height = img.size
 
-                # Step 4: Apply a blur based on the mask
-                blurred_image = img.copy()
+            # Define the sharp box region (left, upper, right, lower)
+            sharp_box = (int(width * box[0]), int(height * box[1]), int(width * box[2]), int(height * box[3]))
 
-                # Loop through the image pixels
-                for y in range(height):
-                    for x in range(width):
-                        # Get blur radius for the current pixel
-                        radius = int(mask[y, x])
-                        
-                        # Define crop bounds (ensure they're within the image)
-                        left = max(0, x - radius)
-                        upper = max(0, y - radius)
-                        right = min(width, x + radius + 1)
-                        lower = min(height, y + radius + 1)
-                        
-                        # Crop and apply blur
-                        cropped = img.crop((left, upper, right, lower))
-                        blurred_cropped = cropped.filter(ImageFilter.GaussianBlur(radius=radius))
-                        
-                        # Safely determine the center of the cropped region
-                        center_x = (blurred_cropped.size[0] - 1) // 2
-                        center_y = (blurred_cropped.size[1] - 1) // 2
-                        
-                        # Get the pixel value from the center of the blurred crop
-                        pixel_value = blurred_cropped.getpixel((center_x, center_y))
-                        blurred_image.putpixel((x, y), pixel_value)
-        output_img = change_contrast(blurred_image, 50)
+            # Create progressively blurred versions of the image
+            blurred_img1 = img.filter(ImageFilter.GaussianBlur(radius=5))
+            blurred_img2 = img.filter(ImageFilter.GaussianBlur(radius=15))
+            blurred_img3 = img.filter(ImageFilter.GaussianBlur(radius=30))
+
+            # Create a mask for blending
+            mask = Image.new("L", img.size, 0)  # Start with a black mask (0 = sharp region)
+            draw = ImageDraw.Draw(mask)
+
+            # Draw a gradient outside the sharp box
+            gradient_width = 100  # Width of the gradient transition
+            for i in range(gradient_width):
+                alpha = int(255 * (i / gradient_width))  # Gradually increase alpha
+                inset_box = (
+                    sharp_box[0] - i, sharp_box[1] - i,
+                    sharp_box[2] + i, sharp_box[3] + i
+                )
+                draw.rectangle(inset_box, outline=alpha, fill=alpha)
+
+            # Blend the images with the gradient mask
+            partially_blurred = Image.composite(img, blurred_img1, mask)
+            mask = mask.filter(ImageFilter.GaussianBlur(radius=10))  # Smooth the mask edges further
+            img = Image.composite(partially_blurred, blurred_img3, mask)
+
+        if contrast:
+            converter = ImageEnhance.Color(img)
+            output_img = converter.enhance(contrast)
+            print("Enhaced image by: ", contrast)
+        else:
+            output_img = img
+
+        # remove all files in the folder temp
+        for file in os.listdir("temp"):
+            os.remove(os.path.join("temp", file))
         output_img.save(output_path)
         print("Success")
     except Exception as e:
         print(f"Error: {e}")
         print(traceback.format_exc())
 
-def change_contrast(img, level):
-    factor = (259 * (level + 255)) / (255 * (259 - level))
-    def contrast(c):
-        return 128 + factor * (c - 128)
-    return img.point(contrast)
-
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python image_blur.py <input_path> <output_path> <box>")
-    else:
-        input_path = sys.argv[1]
-        output_path = sys.argv[2]
-        box = json.loads(sys.argv[3])  # Pass box as JSON string
-        blur_image(input_path, output_path, tuple(box))
+    # if len(sys.argv) != 5:
+    #     print("Usage: python image_blur.py <input_path> <output_path> <box> <contrast>")
+    # else:
+    input_path = sys.argv[1]
+    output_path = sys.argv[2]
+    box = json.loads(sys.argv[3])  # Pass box as JSON string
+    contrast = float(sys.argv[4])
+    print("Input path: ", input_path)
+    print("Output path: ", output_path)
+    print("Box: ", box)
+    print("Contrast: ", contrast)
+    blur_image(input_path, output_path, tuple(box), contrast=contrast)

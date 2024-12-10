@@ -11,10 +11,11 @@ window.addEventListener('DOMContentLoaded', () => {
     console.trace();
 
     const uploadBtn = document.getElementById('upload-btn');
-    const applyBlurBtn = document.getElementById('apply-blur-btn');
+    const applyBtn = document.getElementById('process-btn');
     const img = document.getElementById('displayed-image');
     const selectionBox = document.getElementById('selection-box');
     const imageContainer = document.getElementById('image-container');
+    const sat = document.getElementById('saturation-value');
 
     let startX, startY;
     let currentImagePath = null;
@@ -102,10 +103,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 // Calculate the box's coordinates
                 boxCoordinates = {
-                    left: Math.min(startX, endX),
-                    top: Math.min(startY, endY),
-                    right: Math.max(startX, endX),
-                    bottom: Math.max(startY, endY),
+                    left: Math.min(startX, endX) / c.width,
+                    top: Math.min(startY, endY) / c.height,
+                    right: Math.max(startX, endX) / c.width,
+                    bottom: Math.max(startY, endY) / c.height,
                 };
 
                 // Adjust the size of the box
@@ -125,15 +126,21 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     // Apply blur effect to the selected area
-    applyBlurBtn.addEventListener('click', async () => {
-        if (currentImagePath && boxCoordinates) {
+    applyBtn.addEventListener('click', async () => {
+        if (currentImagePath) {
             try {
+                if (!boxCoordinates) {
+                    boxCoordinates = {}
+                }
+                console.log(boxCoordinates);
                 const blurredImagePath = await ipcRenderer.invoke('blur-image', {
                     input_path: currentImagePath,
                     box: boxCoordinates,
+                    saturation: sat.innerHTML
                 });
                 img.src = blurredImagePath; // Show the blurred image
                 selectionBox.style.display = 'none'; // Hide the selection box after blur
+                clickCount = 0; // Reset click count
             } catch (error) {
                 console.error('Error applying blur:', error);
             }

@@ -11,16 +11,28 @@
             <h1>Miniaturize</h1>
             <button id="upload-btn">Upload Image</button>
             <div class="slider-container">
-                <label for="saturation-slider">Adjust Saturation</label>
-                <input type="range" id="saturation-slider" min="0" max="200" value="100">
+                <label for="saturation-slider">Adjust Colour Saturation</label>
+                <input type="range" id="saturation-slider" style="width: 100%;" min="0" max="2" value="1", step="0.1">
+                <div class="value-display" id="saturation-value">1.0</div>
             </div>
-            <button id="apply-blur-btn">Apply Blur</button>
+            <button id="process-btn">Process</button>
+        </div>
+        <div id="main-content">
+            <div id="image-container">
+                <img id="displayed-image" style="display: none;" />
+                <div id="selection-box"></div>
             </div>
-            <div id="main-content">
-                <div id="image-container">
-                    <img id="displayed-image" style="display: none;" />
-                    <div id="selection-box"></div>
-                </div>
-            </div>
+        </div>
+        <script>
+            
+
+            const slider = document.getElementById('saturation-slider');
+            const valueDisplay = document.getElementById('saturation-value');
+    
+            // Update value display when the slider value changes
+            slider.addEventListener('input', () => {
+                valueDisplay.textContent = slider.value;
+            });
+        </script>
     </body>
 </html>

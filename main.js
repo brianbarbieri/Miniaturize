@@ -35,10 +35,13 @@ ipcMain.handle('select-image', async () => {
   return result.filePaths[0]; // Return the selected file path.
 });
 
-ipcMain.handle('blur-image', async (_, { input_path, box }) => {
-    const outputPath = path.join(__dirname, 'blurred_image.jpg');
+ipcMain.handle('blur-image', async (_, { input_path, box, saturation }) => {
+    // generate random uuid
+    const uuid = Math.random().toString(36).substring(2, 9);
+    const outputPath = path.join(__dirname, "temp",  uuid+ '_image.jpg');
     return new Promise((resolve, reject) => {
-        execFile('python', ['image_blur.py', input_path, outputPath, JSON.stringify([box.left, box.top, box.right, box.bottom])], (error, stdout, stderr) => {
+        console.log(input_path, outputPath, JSON.stringify([box.left, box.top, box.right, box.bottom]), saturation);
+        execFile('python', ['image_blur.py', input_path, outputPath, JSON.stringify([box.left, box.top, box.right, box.bottom]), saturation], (error, stdout, stderr) => {
             if (error) {
             console.error('Error executing Python script:', stderr);
             reject(stderr);
