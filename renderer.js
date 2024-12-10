@@ -132,15 +132,17 @@ window.addEventListener('DOMContentLoaded', () => {
                 if (!boxCoordinates) {
                     boxCoordinates = {}
                 }
-                console.log(boxCoordinates);
+                img.src = "./loading.gif";
+                selectionBox.style.display = 'none'; // Hide the selection box after blur
+
                 const blurredImagePath = await ipcRenderer.invoke('blur-image', {
                     input_path: currentImagePath,
                     box: boxCoordinates,
                     saturation: sat.innerHTML
                 });
                 img.src = blurredImagePath; // Show the blurred image
-                selectionBox.style.display = 'none'; // Hide the selection box after blur
                 clickCount = 0; // Reset click count
+
             } catch (error) {
                 console.error('Error applying blur:', error);
             }
