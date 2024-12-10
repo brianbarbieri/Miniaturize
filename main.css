@@ -197,3 +197,28 @@ button:hover {
 	margin-top: 10px;
 	font-size: 16px;
 }
+
+#follow-point {
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	background-color: red;
+	border-radius: 50%;
+	z-index: 9001;
+}
+
+#follow-line-up {
+	position: absolute;
+	width: 100%;
+	height: 2px;
+	background-color: red;
+	z-index: 9001;
+}
+
+#follow-line-down {	
+	position: absolute;
+	width: 100%;
+	height: 2px;
+	background-color: red;
+	z-index: 9001;
+}

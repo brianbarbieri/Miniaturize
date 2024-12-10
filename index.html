@@ -13,14 +13,17 @@
             <div class="slider-container">
                 <label for="saturation-slider">Adjust size</label>
                 <input type="range" id="saturation-slider" style="width: 100%;" min="0" max="200" value="50", step="1">
-                <div class="value-display" id="saturation-value">1</div>
+                <div class="value-display" id="saturation-value">50</div>
             </div>
             <button id="process-btn">Process</button>
         </div>
         <div id="main-content">
             <div id="image-container">
                 <img id="displayed-image" style="display: none;" />
-                <div id="selection-box"></div>
+                <!-- <div id="selection-box"></div> -->
+                <div id="follow-line-up" style="display: none;"></div>
+                <div id="follow-point" style="display: none;"></div>
+                <div id="follow-line-down" style="display: none;"></div>
             </div>
         </div>
         <script>

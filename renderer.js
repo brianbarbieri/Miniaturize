@@ -13,7 +13,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const uploadBtn = document.getElementById('upload-btn');
     const applyBtn = document.getElementById('process-btn');
     const img = document.getElementById('displayed-image');
-    const selectionBox = document.getElementById('selection-box');
+    const lineUp = document.getElementById('follow-line-up');
+    const lineDown = document.getElementById('follow-line-down');
+    const pointElement = document.getElementById('follow-point');
     const imageContainer = document.getElementById('image-container');
     const sat = document.getElementById('saturation-value');
 
@@ -22,10 +24,6 @@ window.addEventListener('DOMContentLoaded', () => {
     let boxCoordinates = null;
     let clickCount = 0;
 
-    selectionBox.addEventListener('click', async (event) => {
-        selectionBox.style.display = 'none';
-        clickCount = 0; // Reset click count
-    });
 
     // Handle image upload
     if (uploadBtn) {
@@ -43,87 +41,86 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Track mouse movements to update the box
     img.addEventListener('mousemove', (e) => {
-        if (!currentImagePath || clickCount === 0) return; // Only move box if in the first click state
+        if (!currentImagePath) return; // Only move box if in the first click state
 
         // Get image position relative to the page
         const rect = img.getBoundingClientRect();
 
         const c = imageContainer.getBoundingClientRect();
 
-        // Calculate the mouse position relative to the image (taking into account scaling)
+        // Calculate the mouse position relative to the image
         const offsetX = e.clientX - rect.left - (c.left - rect.left);
         const offsetY = e.clientY - rect.top;
 
-        // Only update the box if we're in the first click state (i.e., the box is still being drawn)
-        if (clickCount === 1) {
-            const width = Math.abs(offsetX - startX);
-            const height = Math.abs(offsetY - startY);
-            const left = Math.min(offsetX, startX);
-            const top = Math.min(offsetY, startY);
+        // Update the position of the point
+        pointElement.style.left = `50%`;
+        pointElement.style.top = `${offsetY}px`;
+        pointElement.style.display = 'block'; // Ensure the point is visible
 
-            // Update the selection box during mouse movement
-            selectionBox.style.width = `${width}px`;
-            selectionBox.style.height = `${height}px`;
-            selectionBox.style.left = `${left}px`;
-            selectionBox.style.top = `${top}px`;
-        }
+        // update line above and below
+        dof = parseInt(sat.innerHTML) / 2;
+
+        lineUp.style.top = `${offsetY - dof}px`;
+        lineDown.style.top = `${offsetY + dof}px`;
+        lineUp.style.display = 'block';
+        lineDown.style.display = 'block';
     });
 
     // Click to start and end drawing the box
-    img.addEventListener('click', (e) => {
-        if (!currentImagePath) return; // Don't allow drawing if no image is loaded
+    // img.addEventListener('click', (e) => {
+    //     if (!currentImagePath) return; // Don't allow drawing if no image is loaded
 
-        // Only allow drawing on the image
-        if (e.target === img) {
-            // Get image position relative to the page
-            const rect = img.getBoundingClientRect();
-            const c = imageContainer.getBoundingClientRect();
-            console.log(e.clientX, rect.left, c.left)
+    //     // Only allow drawing on the image
+    //     if (e.target === img) {
+    //         // Get image position relative to the page
+    //         const rect = img.getBoundingClientRect();
+    //         const c = imageContainer.getBoundingClientRect();
+    //         console.log(e.clientX, rect.left, c.left)
 
-            // Calculate the mouse position relative to the image
-            const offsetX = e.clientX - rect.left - (c.left - rect.left);
-            const offsetY = e.clientY - rect.top;
+    //         // Calculate the mouse position relative to the image
+    //         const offsetX = e.clientX - rect.left - (c.left - rect.left);
+    //         const offsetY = e.clientY - rect.top;
 
-            if (clickCount === 0) {
-                // First click: register the starting point
-                startX = offsetX;
-                startY = offsetY;
+    //         if (clickCount === 0) {
+    //             // First click: register the starting point
+    //             startX = offsetX;
+    //             startY = offsetY;
 
-                // Initialize the selection box styles
-                selectionBox.style.left = `${startX}px`;
-                selectionBox.style.top = `${startY}px`;
-                selectionBox.style.width = '0';
-                selectionBox.style.height = '0';
-                selectionBox.style.display = 'block'; // Make the box visible
-                clickCount = 1;
-            } else if (clickCount === 1) {
-                // Second click: register the ending point and finalize the box
-                const endX = offsetX;
-                const endY = offsetY;
+    //             // Initialize the selection box styles
+    //             selectionBox.style.left = `${startX}px`;
+    //             selectionBox.style.top = `${startY}px`;
+    //             selectionBox.style.width = '0';
+    //             selectionBox.style.height = '0';
+    //             selectionBox.style.display = 'block'; // Make the box visible
+    //             clickCount = 1;
+    //         } else if (clickCount === 1) {
+    //             // Second click: register the ending point and finalize the box
+    //             const endX = offsetX;
+    //             const endY = offsetY;
 
-                // Calculate the box's coordinates
-                boxCoordinates = {
-                    left: Math.min(startX, endX) / c.width,
-                    top: Math.min(startY, endY) / c.height,
-                    right: Math.max(startX, endX) / c.width,
-                    bottom: Math.max(startY, endY) / c.height,
-                };
+    //             // Calculate the box's coordinates
+    //             boxCoordinates = {
+    //                 left: Math.min(startX, endX) / c.width,
+    //                 top: Math.min(startY, endY) / c.height,
+    //                 right: Math.max(startX, endX) / c.width,
+    //                 bottom: Math.max(startY, endY) / c.height,
+    //             };
 
-                // Adjust the size of the box
-                selectionBox.style.width = `${Math.abs(endX - startX)}px`;
-                selectionBox.style.height = `${Math.abs(endY - startY)}px`;
-                selectionBox.style.left = `${Math.min(startX, endX)}px`;
-                selectionBox.style.top = `${Math.min(startY, endY)}px`;
+    //             // Adjust the size of the box
+    //             selectionBox.style.width = `${Math.abs(endX - startX)}px`;
+    //             selectionBox.style.height = `${Math.abs(endY - startY)}px`;
+    //             selectionBox.style.left = `${Math.min(startX, endX)}px`;
+    //             selectionBox.style.top = `${Math.min(startY, endY)}px`;
 
-                console.log('Box Coordinates:', boxCoordinates); // Log the box coordinates
+    //             console.log('Box Coordinates:', boxCoordinates); // Log the box coordinates
 
-                clickCount = 2;
-            } else {
-                selectionBox.style.display = 'none';
-                clickCount = 0; // Reset click count
-            }
-        }
-    });
+    //             clickCount = 2;
+    //         } else {
+    //             selectionBox.style.display = 'none';
+    //             clickCount = 0; // Reset click count
+    //         }
+    //     }
+    // });
 
     // Apply blur effect to the selected area
     applyBtn.addEventListener('click', async () => {
