@@ -26,7 +26,11 @@ def choose_focus_height(im):
     plt.close()
     return int(y)
 
-def tilt_shift(im, dof=60, enhance=True, focus_height=None):
+def tilt_shift(im, dof=60, enhance=True, focus_height=None, focus_height_per=None):
+    if focus_height_per is not None:
+        focus_height = int(im.shape[0] * focus_height_per)
+        print("Focus height: ", focus_height)
+        print("Image height: ", im.shape[0])
     if focus_height is None:
         focus_height = choose_focus_height(im)
 
@@ -104,12 +108,13 @@ if __name__ == '__main__':
     # if IM_FILE:
     input_path = sys.argv[1]
     output_path = sys.argv[2]
-    # box = json.loads(sys.argv[3])  # Pass box as JSON string
     dof = int(sys.argv[3])
+    focus_height = float(sys.argv[4])
     im = cv2.imread(input_path)
-    # if SHOULD_RESIZE:
-    #     im = resize(im, width=RESIZE_WIDTH)
-    out = tilt_shift(im, dof, enhance=True)
+    print("Input path: ", input_path)
+    print("Output path: ", output_path)
+    print("DOF: ", dof)
+    out = tilt_shift(im, dof, focus_height_per=focus_height, enhance=True)
     for file in os.listdir("temp"):
         os.remove(os.path.join("temp", file))
     cv2.imwrite(output_path, out.astype(np.uint8))

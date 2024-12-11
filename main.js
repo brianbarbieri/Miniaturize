@@ -35,14 +35,12 @@ ipcMain.handle('select-image', async () => {
   return result.filePaths[0]; // Return the selected file path.
 });
 
-ipcMain.handle('blur-image', async (_, { input_path, box, saturation }) => {
+ipcMain.handle('tilt-image', async (_, { input_path, dof, focus_height }) => {
     // generate random uuid
     const uuid = Math.random().toString(36).substring(2, 9);
     const outputPath = path.join(__dirname, "temp",  uuid+ '_image.jpg');
     return new Promise((resolve, reject) => {
-        // console.log(input_path, outputPath, JSON.stringify([box.left, box.top, box.right, box.bottom]), saturation);
-        // execFile('python', ['image_blur.py', input_path, outputPath, JSON.stringify([box.left, box.top, box.right, box.bottom]), saturation], (error, stdout, stderr) => {
-          execFile('python', ['tilt_shift.py', input_path, outputPath, saturation], (error, stdout, stderr) => { // sat == dof
+          execFile('python', ['tilt_shift.py', input_path, outputPath, dof, focus_height], (error, stdout, stderr) => {
             if (error) {
             console.error('Error executing Python script:', stderr);
             reject(stderr);

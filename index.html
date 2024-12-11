@@ -11,31 +11,28 @@
             <h1>Miniaturize</h1>
             <button id="upload-btn">Upload Image</button>
             <div class="slider-container">
-                <label for="saturation-slider">Adjust size</label>
-                <input type="range" id="saturation-slider" style="width: 100%;" min="0" max="200" value="50", step="1">
-                <div class="value-display" id="saturation-value">50</div>
+                <label for="saturation-slider">Adjust pixel width</label>
+                <input type="range" id="dof-slider" style="width: 100%; margin-top: 5px;" min="0" max="250" value="50", step="1">
+                <div class="value-display" id="dof-value">50</div>
             </div>
-            <button id="process-btn">Process</button>
+            <button id="process-btn" disabled>Process</button>
         </div>
         <div id="main-content">
             <div id="image-container">
                 <img id="displayed-image" style="display: none;" />
-                <!-- <div id="selection-box"></div> -->
-                <div id="follow-line-up" style="display: none;"></div>
-                <div id="follow-point" style="display: none;"></div>
-                <div id="follow-line-down" style="display: none;"></div>
+                <div id="follow-line-up" class="line red" style="display: none;"></div>
+                <div id="follow-point" class="dot red" style="display: none;"></div>
+                <div id="follow-line-down" class="line red" style="display: none;"></div>
+
+                <div id="select-line-up" class="line green" style="display: none;"></div>
+                <div id="select-point" class="dot green" style="display: none;"></div>
+                <div id="select-line-down" class="line green"   style="display: none;"></div>
             </div>
         </div>
         <script>
             
 
-            const slider = document.getElementById('saturation-slider');
-            const valueDisplay = document.getElementById('saturation-value');
-    
-            // Update value display when the slider value changes
-            slider.addEventListener('input', () => {
-                valueDisplay.textContent = slider.value;
-            });
+
         </script>
     </body>
 </html>

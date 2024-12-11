@@ -2,28 +2,21 @@ const {
     ipcRenderer
 } = require('electron');
 
-let isLoaded = false;
-
 window.addEventListener('DOMContentLoaded', () => {
-    if (isLoaded) return;
-    isLoaded = true;
-    console.log('DOMContentLoaded');
-    console.trace();
-
     const uploadBtn = document.getElementById('upload-btn');
     const applyBtn = document.getElementById('process-btn');
     const img = document.getElementById('displayed-image');
     const lineUp = document.getElementById('follow-line-up');
     const lineDown = document.getElementById('follow-line-down');
     const pointElement = document.getElementById('follow-point');
-    const imageContainer = document.getElementById('image-container');
-    const sat = document.getElementById('saturation-value');
 
-    let startX, startY;
+    const lineUpSelect = document.getElementById('select-line-up');
+    const lineDownSelect = document.getElementById('select-line-down');
+    const pointElementSelect = document.getElementById('select-point');
+    // const imageContainer = document.getElementById('image-container');
+
     let currentImagePath = null;
-    let boxCoordinates = null;
-    let clickCount = 0;
-
+    let y = null;
 
     // Handle image upload
     if (uploadBtn) {
@@ -39,6 +32,14 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const slider = document.getElementById('dof-slider');
+    const valueDisplay = document.getElementById('dof-value');
+
+    // Update value display when the slider value changes
+    slider.addEventListener('input', () => {
+        valueDisplay.textContent = slider.value;
+    });
+
     // Track mouse movements to update the box
     img.addEventListener('mousemove', (e) => {
         if (!currentImagePath) return; // Only move box if in the first click state
@@ -46,11 +47,13 @@ window.addEventListener('DOMContentLoaded', () => {
         // Get image position relative to the page
         const rect = img.getBoundingClientRect();
 
-        const c = imageContainer.getBoundingClientRect();
+        // const c = imageContainer.getBoundingClientRect();
 
         // Calculate the mouse position relative to the image
-        const offsetX = e.clientX - rect.left - (c.left - rect.left);
+        // const offsetX = e.clientX - rect.left - (c.left - rect.left);
         const offsetY = e.clientY - rect.top;
+        
+        // TODO make sure the lines do not go outside of the image
 
         // Update the position of the point
         pointElement.style.left = `50%`;
@@ -58,7 +61,7 @@ window.addEventListener('DOMContentLoaded', () => {
         pointElement.style.display = 'block'; // Ensure the point is visible
 
         // update line above and below
-        dof = parseInt(sat.innerHTML) / 2;
+        dof = parseInt(valueDisplay.innerHTML) / 2;
 
         lineUp.style.top = `${offsetY - dof}px`;
         lineDown.style.top = `${offsetY + dof}px`;
@@ -66,10 +69,40 @@ window.addEventListener('DOMContentLoaded', () => {
         lineDown.style.display = 'block';
     });
 
-    // Click to start and end drawing the box
-    // img.addEventListener('click', (e) => {
-    //     if (!currentImagePath) return; // Don't allow drawing if no image is loaded
+    const addRange = (e) => {
+        if (!currentImagePath) return; // Don't allow drawing if no image is loaded
+        const rect = img.getBoundingClientRect();
 
+        // Calculate the mouse position relative to the image
+        const offsetY = e.clientY - rect.top;
+        
+        // TODO make sure the lines do not go outside of the image
+
+        // Update the position of the point
+        pointElementSelect.style.left = `50%`;
+        pointElementSelect.style.top = `${offsetY}px`;
+        pointElementSelect.style.display = 'block'; // Ensure the point is visible
+
+        // update line above and below
+        dof = parseInt(valueDisplay.innerHTML) / 2;
+
+        lineUpSelect.style.top = `${offsetY - dof}px`;
+        lineDownSelect.style.top = `${offsetY + dof}px`;
+        lineUpSelect.style.display = 'block';
+        lineDownSelect.style.display = 'block';
+
+        applyBtn.disabled = false;
+        y = offsetY / rect.height;
+        console.log(y)
+    }
+
+    // Click to start and end drawing the box
+    pointElement.addEventListener('click', (e) => {
+        addRange(e)
+    });
+    img.addEventListener('click', (e) => {
+        addRange(e)
+    });
     //     // Only allow drawing on the image
     //     if (e.target === img) {
     //         // Get image position relative to the page
@@ -126,16 +159,11 @@ window.addEventListener('DOMContentLoaded', () => {
     applyBtn.addEventListener('click', async () => {
         if (currentImagePath) {
             try {
-                if (!boxCoordinates) {
-                    boxCoordinates = {}
-                }
                 img.src = "./loading.gif";
-                selectionBox.style.display = 'none'; // Hide the selection box after blur
-
-                const blurredImagePath = await ipcRenderer.invoke('blur-image', {
+                const blurredImagePath = await ipcRenderer.invoke('tilt-image', {
                     input_path: currentImagePath,
-                    box: boxCoordinates,
-                    saturation: sat.innerHTML
+                    dof: parseInt(valueDisplay.innerHTML),
+                    focus_height: y
                 });
                 img.src = blurredImagePath; // Show the blurred image
                 clickCount = 0; // Reset click count
